@@ -42,7 +42,6 @@
 
 ## Tileset Descriptions
 
-> Briefly explain what each tileset looks like / is designed for (style, emphasis, colors, readability).
 
 - **Base Map**: The base map using monochrome style displaying the downtown Bellevue.
 - **Modified Base Map**: The modified base map using street v12 style displaying the downtown Bellevue
