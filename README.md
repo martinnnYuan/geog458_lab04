@@ -7,23 +7,26 @@
 
 ## Screenshots (Four Tileset Layers)
 
-### Tileset 1
+### Monochrome Base Map
 ![Tileset 1 Screenshot](img/tileset_1.png)
 
-### Tileset 2
+### Modified Base Map
 ![Tileset 2 Screenshot](img/tileset_2.png)
 
-### Tileset 3
+### Thematic Map
 ![Tileset 3 Screenshot](img/tileset_3.png)
 
-### Tileset 4
+### Combined Thematic Map
 ![Tileset 4 Screenshot](img/tileset_4.png)
+
+### UW Style Map
+![Tileset 5 Screenshot](img/tileset_5.png)
 
 ---
 
 ## Examined Geographic Area
 - Area name: **Bellevue, WA**
-- Center / reference location: **Bellevue Downtown**
+- Center location: **Bellevue Downtown**
 
 
 
@@ -41,8 +44,9 @@
 
 > Briefly explain what each tileset looks like / is designed for (style, emphasis, colors, readability).
 
-- **Tileset 1**: The base map using monochrome style displaying the downtown Bellevue.
-- **Tileset 2**: The thematic map of street v12 style displaying the downtown Bellevue.
-- **Tileset 3**: This map contains data from City of Bellevue Open Data website showing the trails in the city of Bellevue. Gree lines represents the trails. 
-- **Tileset 4**: **[description — e.g., themed color palette / minimal labels / focus on roads]**
+- **Base Map**: The base map using monochrome style displaying the downtown Bellevue.
+- **Modified Base Map**: The modified base map using street v12 style displaying the downtown Bellevue
+- **Thematic Map**: This map contains data from City of Bellevue Open Data website showing the trails in the city of Bellevue. Gree lines represents the trails. 
+- **Combined Thematic Map**: This map combines the modified base map with the thematic map to show off the trails in the downtown Bellevue area.
+- **UW Style Map**: This map shows off the self designed UW style of map color scheme. 
 

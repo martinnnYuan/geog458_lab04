@@ -78,16 +78,18 @@
     const tileset2 = L.tileLayer("assets/tileset_2/{z}/{x}/{y}.png", tileOptions);
     const tileset3 = L.tileLayer("assets/tileset_3/{z}/{x}/{y}.png", tileOptions);
     const tileset4 = L.tileLayer("assets/tileset_4/{z}/{x}/{y}.png", tileOptions);
+    const tileset5 = L.tileLayer("assets/tileset_5/{z}/{x}/{y}.png", tileOptions)
 
 
     let activeTiles = tileset1.addTo(map);
 
     L.control.layers(
       {
-        "Tileset 1": tileset1,
-        "Tileset 2": tileset2,
-        "Tileset 3": tileset3,
-        "Tileset 4": tileset4
+        "Monochrome Base Map": tileset1,
+        "Modified Base Map": tileset2,
+        "Thematic Map": tileset3,
+        "Combined Thematic Map": tileset4,
+        "UW Style Map": tileset5
       },
       null,
       { collapsed: false }
