@@ -2,245 +2,180 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>GEOG 458 Lab 04 – Four Tile Sets</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <title>Lab 04 – Tile Map Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
   <style>
-    :root {
-      --bg: #0b0d12;
-      --panel: #141824;
-      --panel-2: #0f131d;
-      --text: #e6e8ee;
-      --muted: #a5adbd;
-      --accent: #66e0c0;
-      --accent-2: #f5c26b;
-      --border: #2a3143;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
-    }
-    #map {
-      position: fixed;
-      inset: 0;
-    }
-    .hud {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      width: min(360px, 90vw);
-      pointer-events: none;
-    }
+    html, body { height: 100%; margin: 0; }
+    #map { height: 100%; width: 100%; }
+
+    /* Simple UI panels */
     .panel {
-      background: linear-gradient(180deg, rgba(20,24,36,0.96), rgba(15,19,29,0.92));
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      pointer-events: auto;
-    }
-    .title {
-      font-weight: 600;
-      font-size: 16px;
-      letter-spacing: 0.3px;
-      margin: 0 0 6px 0;
-    }
-    .desc {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.35;
-      font-size: 13px;
-    }
-    .layers {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8px;
-      margin-top: 6px;
-    }
-    .layer-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--panel-2);
-      border: 1px solid var(--border);
+      position: absolute;
+      z-index: 999;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(0,0,0,0.12);
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 12px 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: #111;
     }
-    .layer-item input { accent-color: var(--accent); }
-    .layer-item label { font-size: 13px; }
-    .chip {
-      margin-left: auto;
-      font-size: 11px;
-      color: #0b0d12;
-      background: var(--accent-2);
-      padding: 2px 6px;
-      border-radius: 999px;
-      font-weight: 600;
+
+    #info {
+      top: 12px;
+      left: 12px;
+      max-width: 320px;
+      line-height: 1.35;
     }
-    .legend {
-      position: fixed;
-      bottom: 16px;
-      left: 16px;
-      z-index: 10;
-      width: min(360px, 90vw);
+    #info h1 {
+      font-size: 16px;
+      margin: 0 0 6px 0;
+      font-weight: 700;
     }
-    .legend h3 {
-      font-size: 13px;
-      margin: 0 0 8px 0;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .legend p {
+    #info p {
       margin: 0;
-      font-size: 12px;
-      color: var(--muted);
+      font-size: 13px;
+      color: #333;
     }
-    @media (max-width: 600px) {
-      .hud, .legend { left: 10px; right: 10px; }
+
+    #opacityBox {
+      bottom: 12px;
+      left: 12px;
+      width: 240px;
+    }
+    #opacityBox label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    #opacityBox input[type="range"] {
+      width: 100%;
+    }
+
+    /* Make Leaflet layer control a bit cleaner */
+    .leaflet-control-layers {
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
     }
   </style>
 </head>
+
 <body>
-  <div id="map" aria-label="Map"></div>
+  <div id="map"></div>
 
-  <div class="hud">
-    <div class="panel">
-      <h1 class="title">GEOG 458 Lab 04: Four Tile Sets</h1>
-      <p class="desc">Basemap + thematic layer + combined layer + themed layer (Mapbox GL JS, local tiles). Use the switches to toggle layers.</p>
-    </div>
-    <div class="panel">
-      <div class="title" style="margin-bottom:8px;">Layers</div>
-      <div class="layers">
-        <div class="layer-item">
-          <input type="checkbox" id="layer1" checked />
-          <label for="layer1">Tile Set 1 – Basemap</label>
-          <span class="chip">base</span>
-        </div>
-        <div class="layer-item">
-          <input type="checkbox" id="layer2" />
-          <label for="layer2">Tile Set 2 – Thematic</label>
-          <span class="chip">theme</span>
-        </div>
-        <div class="layer-item">
-          <input type="checkbox" id="layer3" />
-          <label for="layer3">Tile Set 3 – Basemap + Thematic</label>
-          <span class="chip">combo</span>
-        </div>
-        <div class="layer-item">
-          <input type="checkbox" id="layer4" />
-          <label for="layer4">Tile Set 4 – Mapbox Theme</label>
-          <span class="chip">style</span>
-        </div>
-      </div>
-    </div>
+  <!-- Simple title/description -->
+  <div id="info" class="panel">
+    <h1>Lab 04: Map Tiles</h1>
+    <p>
+      Four locally-hosted raster tilesets (tileset1–tileset4).<br />
+      Use the layer control (top-right) to switch styles.
+    </p>
   </div>
 
-  <div class="panel legend">
-    <h3>Map Notes</h3>
-    <p>Study area around Seattle region. Zoom range: 11–15. Pan/zoom are enabled; scale bar and attribution are included.</p>
+  <!-- Opacity slider -->
+  <div id="opacityBox" class="panel">
+    <label>
+      <span>Layer opacity</span>
+      <span id="opacityValue">100%</span>
+    </label>
+    <input id="opacitySlider" type="range" min="0" max="100" value="100" />
   </div>
 
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
   <script>
-    // If you use a Mapbox-hosted style, set your token here.
-    // For local raster tiles with a custom style, a token is not required.
-    mapboxgl.accessToken = "";
+    /**
+     * ✅ IMPORTANT: Adjust these to your tiles' region
+     * - If you don’t know the center, open the map, guess, then refine.
+     */
+    const initialCenter = [47.6062, -122.3321]; // example: Seattle
+    const initialZoom = 11;
 
-    const map = new mapboxgl.Map({
-      container: "map",
-      style: {
-        version: 8,
-        sources: {},
-        layers: [
-          { id: "background", type: "background", paint: { "background-color": "#0b0d12" } }
-        ]
-      },
-      center: [-122.168, 47.636],
-      zoom: 12,
-      minZoom: 11,
-      maxZoom: 15,
-      attributionControl: true
+    // Create the map
+    const map = L.map("map", {
+      center: initialCenter,
+      zoom: initialZoom,
+      zoomControl: true
+    });
+    
+    const commonTileOptions = {
+      minZoom: 0,
+      maxZoom: 16,   // change if you generated deeper zooms
+      tms: false,    // set true only if your tiles are TMS (flipped y)
+      noWrap: true,  // prevents repeating world horizontally
+      attribution: "Generated tiles (Lab 04)"
+    };
+
+    const tileset1 = L.tileLayer("tileset1/{z}/{x}/{y}.png", commonTileOptions);
+    const tileset2 = L.tileLayer("tileset2/{z}/{x}/{y}.png", commonTileOptions);
+    const tileset3 = L.tileLayer("tileset3/{z}/{x}/{y}.png", commonTileOptions);
+    const tileset4 = L.tileLayer("tileset4/{z}/{x}/{y}.png", commonTileOptions);
+
+    // Default layer on load
+    let activeLayer = tileset1.addTo(map);
+
+    // Layer control (top-right)
+    const baseLayers = {
+      "Tileset 1": tileset1,
+      "Tileset 2": tileset2,
+      "Tileset 3": tileset3,
+      "Tileset 4": tileset4
+    };
+    L.control.layers(baseLayers, null, { collapsed: false }).addTo(map);
+
+    // Scale bar (bottom-left)
+    L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+    /**
+     * Opacity slider for the currently active layer
+     */
+    const slider = document.getElementById("opacitySlider");
+    const opacityValue = document.getElementById("opacityValue");
+
+    function setLayerOpacity(val01) {
+      if (!activeLayer) return;
+      activeLayer.setOpacity(val01);
+      opacityValue.textContent = Math.round(val01 * 100) + "%";
+    }
+
+    slider.addEventListener("input", (e) => {
+      const v = Number(e.target.value) / 100;
+      setLayerOpacity(v);
     });
 
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
-    map.addControl(new mapboxgl.ScaleControl({ maxWidth: 100, unit: "imperial" }));
+    // Update active layer reference when user switches base layer
+    map.on("baselayerchange", (e) => {
+      activeLayer = e.layer;
+      // re-apply current slider value to the newly selected layer
+      setLayerOpacity(Number(slider.value) / 100);
+    });
 
-    map.on("load", () => {
-      map.addSource("tileset-1", {
-        type: "raster",
-        tiles: ["assets/tileset_1/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        minzoom: 11,
-        maxzoom: 15,
-        attribution: "Map tiles designed by student"
-      });
-      map.addSource("tileset-2", {
-        type: "raster",
-        tiles: ["assets/tileset_2/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        minzoom: 11,
-        maxzoom: 15,
-        attribution: "Map tiles designed by student"
-      });
-      map.addSource("tileset-3", {
-        type: "raster",
-        tiles: ["assets/tileset_3/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        minzoom: 11,
-        maxzoom: 15,
-        attribution: "Map tiles designed by student"
-      });
-      map.addSource("tileset-4", {
-        type: "raster",
-        tiles: ["assets/tileset_4/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        minzoom: 11,
-        maxzoom: 15,
-        attribution: "Map tiles designed by student"
-      });
-
-      map.addLayer({
-        id: "tileset-1-layer",
-        type: "raster",
-        source: "tileset-1"
-      });
-      map.addLayer({
-        id: "tileset-2-layer",
-        type: "raster",
-        source: "tileset-2",
-        layout: { visibility: "none" }
-      });
-      map.addLayer({
-        id: "tileset-3-layer",
-        type: "raster",
-        source: "tileset-3",
-        layout: { visibility: "none" }
-      });
-      map.addLayer({
-        id: "tileset-4-layer",
-        type: "raster",
-        source: "tileset-4",
-        layout: { visibility: "none" }
-      });
-
-      const bindToggle = (checkboxId, layerId) => {
-        const el = document.getElementById(checkboxId);
-        el.addEventListener("change", () => {
-          map.setLayoutProperty(layerId, "visibility", el.checked ? "visible" : "none");
-        });
-      };
-
-      bindToggle("layer1", "tileset-1-layer");
-      bindToggle("layer2", "tileset-2-layer");
-      bindToggle("layer3", "tileset-3-layer");
-      bindToggle("layer4", "tileset-4-layer");
+    /**
+     * Optional: Helpful console message if tiles are missing
+     * (Open DevTools -> Console)
+     */
+    map.on("tileerror", (err) => {
+      console.warn("Tile load error:", err);
+      console.warn(
+        "Check your tile folder path and file extension. " +
+        "Also check if you need tms:true (y flipped)."
+      );
     });
   </script>
 </body>
